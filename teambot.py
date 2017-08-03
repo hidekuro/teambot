@@ -93,9 +93,9 @@ def team_to_string(teams) -> str:
         members = ""
         for m in t:
             if members:
-                members += "、"
+                members += ", "
             members += m.nick or m.name
-        result += u"[Team {0}] {1}\n".format(i, members)
+        result += u"[Team {0}] {1}\n".format(i + 1, members)
     return result
 
 
