@@ -4,6 +4,8 @@ A Discord bot for party players.
 
 teambot will help organize your team.
 
+Especially useful for PUBG players.
+
 # Commands Overview
 
 prefix: `*`
@@ -53,3 +55,7 @@ echo BOT_TOKEN=abcde12345yourtoken > .env
 # start bot in background
 bash ./start.sh
 ```
+
+# LICENSE
+
+The MIT License.
