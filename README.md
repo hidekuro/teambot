@@ -6,7 +6,7 @@ teambot will help organize your team.
 
 Especially useful for PUBG players.
 
-# Commands Overview
+## Commands Overview
 
 prefix: `*`
 
@@ -24,17 +24,17 @@ You will get result: 3, 4, 4, and 4 peoples teams.
 - `*dice` ... Rolls from 1-6.
 - `*dice 10` ... Rolls from 1-10. (or any number would you supplied)
 
-# System Requirements
+## System Requirements
 
 - Python 3+
 - `pip`
 
-# Roles Requirements
+## Roles Requirements
 
 - Read Messages
 - Send Messages
 
-# Getting started
+## Getting started
 
 ```bash
 # clone repos
@@ -42,11 +42,11 @@ git clone https://github.com/hidekuro/teambot
 cd teambot
 
 # recommended venv
-python3 -m venv ENV
-. ./ENV/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 
 # install pip modules
-pip install -U -r requirements.txt
+pip install -r requirements.txt
 
 # put your APP BOT USER's Token into .env file
 # https://discordapp.com/developers/applications/me
@@ -56,6 +56,6 @@ echo BOT_TOKEN=abcde12345yourtoken > .env
 bash ./start.sh
 ```
 
-# LICENSE
+## LICENSE
 
 The MIT License.

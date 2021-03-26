@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aiohttp = "==1.0.5"
+async-timeout = "==1.2.1"
+chardet = "==3.0.4"
+"discord.py" = "==0.16.8"
+multidict = "==3.1.3"
+websockets = "==3.3"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
