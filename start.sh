@@ -9,10 +9,11 @@ if [[ -e teambot.pid ]]; then
   rm $PID
 fi
 
-. ENV/bin/activate
-. .env
+source .venv/bin/activate
 
-export BOT_TOKEN
+set -a
+source .env
+set +a
 
 nohup python teambot.py >/dev/null 2>&1 &
 

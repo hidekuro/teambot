@@ -1,8 +1,8 @@
 // 既定の設定とユーザー設定を上書きするには、このファイル内に設定を挿入します
 {
-    "python.pythonPath": ".venv/bin/python3",
+    "python.pythonPath": ".venv/bin/python",
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
-    "python.formatting.provider": "yapf",
+    "python.formatting.provider": "autopep8",
     "python.terminal.activateEnvironment": false
 }

@@ -9,7 +9,7 @@ import discord
 from discord.enums import ChannelType
 from discord.ext import commands
 
-# Discord Client
+# Discord bot
 bot = commands.Bot(command_prefix='*', description="shika bot")
 
 # Logger
@@ -24,14 +24,14 @@ LOGGER.addHandler(consoleHandler)
 LOGGER.addHandler(syslogHandler)
 
 
-def get_context_vc(ctx: commands.Context) -> discord.channel.Channel:
+def get_context_vc(ctx: commands.Context) -> discord.channel.VoiceChannel:
     u"""発言者がいるVCを取得する
 
     Args:
         ctx: コンテキストオブジェクト
 
     Returns:
-        発言者がいるVCの Channel オブジェクト
+        発言者がいるVCの VoiceChannel オブジェクト
     """
     author = ctx.message.author
     server = ctx.message.server  # type: discord.server.Server
@@ -148,7 +148,7 @@ async def team(ctx: commands.Context, alloc_size: int):
 
 
 @bot.command(pass_context=True)
-async def dice(ctx: commands.Context, dimen: int=6):
+async def dice(ctx: commands.Context, dimen: int = 6):
     u"""1から指定数値までのダイスを振る
     """
     num = random.randint(1, dimen)
