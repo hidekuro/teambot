@@ -1,2 +1,4 @@
-VIRTUAL_ENV=.venv
+dotenv
+
+export PIPENV_VENV_IN_PROJECT=1
 layout pipenv
