@@ -4,7 +4,7 @@ A Discord bot for party players.
 
 teambot will help organize your team.
 
-Especially useful for PUBG players.
+Especially useful for community of games played in teams of 3~4 people. (i.e. PUBG, APEX, Fortnite, etc.)
 
 ## Commands Overview
 
