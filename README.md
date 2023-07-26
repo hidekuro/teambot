@@ -27,7 +27,14 @@ You will get result: 3, 4, 4, and 4 peoples teams.
 ## System Requirements
 
 - Python 3+
-- `pip`
+- pipenv (pipx recommended)
+
+```bash
+python3 -m pip install -U pip
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+pipx install pipenv
+```
 
 ## Roles Requirements
 
@@ -46,14 +53,23 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 # install pip modules
-pip install -r requirements.txt
+pipenv install
+# or...
+# pip install -r requirements.txt
 
 # put your APP BOT USER's Token into .env file
 # https://discordapp.com/developers/applications/me
 echo BOT_TOKEN=abcde12345yourtoken > .env
 
 # start bot in background
+# this script creates teambot.pid on current directory.
 bash ./start.sh
+```
+
+To exit, do the following.
+
+```bash
+kill -TERM $(cat teambot.pid)
 ```
 
 ## LICENSE
