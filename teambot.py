@@ -6,11 +6,14 @@ from logging import INFO, Formatter, StreamHandler, getLogger
 from logging.handlers import SYSLOG_UDP_PORT, SysLogHandler
 
 import discord
-from discord.enums import ChannelType
 from discord.ext import commands
 
-# Discord bot
-bot = commands.Bot(command_prefix='*', description="shika bot")
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='*',
+                   description="shika bot",
+                   intents=intents)
 
 # Logger
 simpleFormatter = Formatter("[%(levelname)s] %(message)s")
@@ -22,21 +25,6 @@ LOGGER = getLogger(__file__)
 LOGGER.setLevel(INFO)
 LOGGER.addHandler(consoleHandler)
 LOGGER.addHandler(syslogHandler)
-
-
-def get_context_vc(ctx: commands.Context) -> discord.channel.VoiceChannel:
-    u"""発言者がいるVCを取得する
-
-    Args:
-        ctx: コンテキストオブジェクト
-
-    Returns:
-        発言者がいるVCの VoiceChannel オブジェクト
-    """
-    author = ctx.message.author
-    server = ctx.message.server  # type: discord.server.Server
-    all_vc = list(c for c in server.channels if c.type == ChannelType.voice)
-    return next(c for c in all_vc if author in c.voice_members)
 
 
 def team_alloc(members: list, alloc_size: int) -> list:
@@ -107,18 +95,17 @@ async def proc_alloc_command(ctx: commands.Context, alloc_size: int):
         alloc_size: 1チームあたりの人数
     """
     # 発言者のVCにいるメンバーリスト
-    live_vc = get_context_vc(ctx)
-    members = live_vc.voice_members
+    members = ctx.author.voice.channel.members
 
     # 簡易テスト用
-    # members = list(m for m in ctx.message.server.members if m != bot.user)
+    # members = list(m for m in ctx.message.guild.members if m != bot.user)
 
     # チーム分け
     result = team_alloc(members, alloc_size)
 
     # 返答
     reply = team_to_string(result)
-    await bot.say(reply)
+    await ctx.channel.send(reply)
 
 
 @bot.event
@@ -152,7 +139,7 @@ async def dice(ctx: commands.Context, dimen: int = 6):
     u"""1から指定数値までのダイスを振る
     """
     num = random.randint(1, dimen)
-    await bot.say("{0.mention} {1}".format(ctx.message.author, num))
+    await ctx.channel.send("{0.mention} {1}".format(ctx.message.author, num))
 
 
 def main():
