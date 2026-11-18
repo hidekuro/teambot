@@ -7,6 +7,10 @@ updates:
     # pyproject.toml の exclude-newer で公開から 3 日以内の版は lock に入れられないので、Dependabot も同じだけ待たせる
     cooldown:
       default-days: 3
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
   - package-ecosystem: github-actions
     directory: /
     schedule:

@@ -1,0 +1,5 @@
+# .env のトークンをイメージに入れないよう、ビルドに要るファイルだけを許可する
+*
+!pyproject.toml
+!uv.lock
+!teambot.py

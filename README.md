@@ -50,18 +50,22 @@ uv sync
 # https://discord.com/developers/applications
 cp .env.example .env
 
-# start bot in foreground
+# start bot in foreground (for development)
 uv run --env-file .env teambot.py
-
-# or start bot in background
-# this script creates teambot.pid on current directory.
-bash ./start.sh
 ```
 
-To exit, do the following.
+To keep the bot running on a server, use Docker Compose.
+The container restarts automatically unless you stop it.
 
 ```bash
-kill -TERM $(cat teambot.pid)
+# start in background
+docker compose up -d --build
+
+# show logs
+docker compose logs -f
+
+# stop
+docker compose down
 ```
 
 ## Development
