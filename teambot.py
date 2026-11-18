@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import random
 import sys
@@ -11,24 +10,22 @@ from discord.ext import commands
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='*',
-                   description="shika bot",
-                   intents=intents)
+bot = commands.Bot(command_prefix="*", description="shika bot", intents=intents)
 
 # Logger
 simpleFormatter = Formatter("[%(levelname)s] %(message)s")
 consoleHandler = StreamHandler(sys.stdout)
 consoleHandler.setFormatter(simpleFormatter)
-syslogHandler = SysLogHandler(address=('localhost', SYSLOG_UDP_PORT))
+syslogHandler = SysLogHandler(address=("localhost", SYSLOG_UDP_PORT))
 syslogHandler.setFormatter(simpleFormatter)
-LOGGER = getLogger(__file__)
+LOGGER = getLogger(__name__)
 LOGGER.setLevel(INFO)
 LOGGER.addHandler(consoleHandler)
 LOGGER.addHandler(syslogHandler)
 
 
 def team_alloc(members: list, alloc_size: int) -> list:
-    u"""指定の割り当てサイズに近い人数で均等にチーム分配する
+    """指定の割り当てサイズに近い人数で均等にチーム分配する
 
     Args:
         members: 参加者リスト
@@ -57,7 +54,7 @@ def team_alloc(members: list, alloc_size: int) -> list:
 
     # 割り振り
     result = []
-    for i, s in enumerate(sizes):
+    for s in sizes:
         team = []
         for _ in range(s):
             m = next(members_iter)
@@ -68,7 +65,7 @@ def team_alloc(members: list, alloc_size: int) -> list:
 
 
 def team_to_string(teams) -> str:
-    u"""チームのリストを表す2次元リストの文字列表現を取得する
+    """チームのリストを表す2次元リストの文字列表現を取得する
 
     Args:
         teams: チームのリストを表す2次元リスト
@@ -83,12 +80,12 @@ def team_to_string(teams) -> str:
             if members:
                 members += ", "
             members += m.nick or m.name
-        result += u"[Team {0}] {1}\n".format(i + 1, members)
+        result += f"[Team {i + 1}] {members}\n"
     return result
 
 
 async def proc_alloc_command(ctx: commands.Context, alloc_size: int):
-    u"""チーム割り振りコマンドを処理し、返答する。
+    """チーム割り振りコマンドを処理し、返答する。
 
     Args:
         ctx: commands.Context オブジェクト
@@ -110,41 +107,37 @@ async def proc_alloc_command(ctx: commands.Context, alloc_size: int):
 
 @bot.event
 async def on_ready():
-    LOGGER.info("Logged in as {0.name}#{0.id}".format(bot.user))
+    LOGGER.info(f"Logged in as {bot.user.name}#{bot.user.id}")
 
 
 @bot.command(pass_context=True)
 async def duo(ctx: commands.Context):
-    u"""1チームあたり2人に近くなるよう均等にチーム分けする
-    """
+    """1チームあたり2人に近くなるよう均等にチーム分けする"""
     await proc_alloc_command(ctx, 2)
 
 
 @bot.command(pass_context=True, aliases=["sq"])
 async def squad(ctx: commands.Context):
-    u"""1チームあたり4人に近くなるよう均等にチーム分けする
-    """
+    """1チームあたり4人に近くなるよう均等にチーム分けする"""
     await proc_alloc_command(ctx, 4)
 
 
 @bot.command(pass_context=True)
 async def team(ctx: commands.Context, alloc_size: int):
-    u"""指定人数に近くなるよう均等にチーム分けする
-    """
+    """指定人数に近くなるよう均等にチーム分けする"""
     await proc_alloc_command(ctx, alloc_size)
 
 
 @bot.command(pass_context=True)
 async def dice(ctx: commands.Context, dimen: int = 6):
-    u"""1から指定数値までのダイスを振る
-    """
+    """1から指定数値までのダイスを振る"""
     num = random.randint(1, dimen)
-    await ctx.channel.send("{0.mention} {1}".format(ctx.message.author, num))
+    await ctx.channel.send(f"{ctx.message.author.mention} {num}")
 
 
 def main():
     bot.run(os.environ.get("BOT_TOKEN"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
