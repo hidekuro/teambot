@@ -8,31 +8,33 @@ Especially useful for community of games played in teams of 3~4 people. (i.e. PU
 
 ## Commands Overview
 
-prefix: `*`
+All commands are slash commands.
 
 ### Generate random team
 
-- `*duo` ... Make a random pairs within commander's VC room members.
-- `*sq`, `*squad` ... Like above, making 4 peoples team.
-- `*team 3` ... Like above, making team with specified size.
+- `/duo` ... Make a random pairs within commander's VC room members.
+- `/squad` ... Like above, making 4 peoples team.
+- `/team size:3` ... Like above, making team with specified size.
 
-For example, There are 15 peoples, and you say `*sq`.
+For example, There are 15 peoples, and you say `/squad`.
 You will get result: 3, 4, 4, and 4 peoples teams.
 
 ### Simple dice roll
 
-- `*dice` ... Rolls from 1-6.
-- `*dice 10` ... Rolls from 1-10. (or any number would you supplied)
+- `/dice` ... Rolls from 1-6.
+- `/dice sides:10` ... Rolls from 1-10. (or any number would you supplied)
 
 ## System Requirements
 
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
   - uv installs the required Python version (see `.python-version`) automatically.
 
-## Roles Requirements
+## Bot Settings
 
-- Read Messages
-- Send Messages
+- No privileged gateway intents are needed.
+- Invite the bot with the `bot` scope and these permissions:
+  - View Channels
+  - Send Messages
 
 ## Getting started
 
@@ -44,9 +46,9 @@ cd teambot
 # install dependencies into .venv
 uv sync
 
-# put your bot's token into .env file
+# put your bot's token into .env file (see .env.example)
 # https://discord.com/developers/applications
-echo BOT_TOKEN=abcde12345yourtoken > .env
+cp .env.example .env
 
 # start bot in foreground
 uv run --env-file .env teambot.py

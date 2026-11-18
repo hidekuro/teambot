@@ -1,27 +1,12 @@
+import logging
 import os
 import random
 import sys
-from logging import INFO, Formatter, StreamHandler, getLogger
-from logging.handlers import SYSLOG_UDP_PORT, SysLogHandler
 
 import discord
-from discord.ext import commands
+from discord import app_commands
 
-intents = discord.Intents.default()
-intents.message_content = True
-
-bot = commands.Bot(command_prefix="*", description="shika bot", intents=intents)
-
-# Logger
-simpleFormatter = Formatter("[%(levelname)s] %(message)s")
-consoleHandler = StreamHandler(sys.stdout)
-consoleHandler.setFormatter(simpleFormatter)
-syslogHandler = SysLogHandler(address=("localhost", SYSLOG_UDP_PORT))
-syslogHandler.setFormatter(simpleFormatter)
-LOGGER = getLogger(__name__)
-LOGGER.setLevel(INFO)
-LOGGER.addHandler(consoleHandler)
-LOGGER.addHandler(syslogHandler)
+LOGGER = logging.getLogger(__name__)
 
 
 def team_alloc(members: list, alloc_size: int) -> list:
@@ -64,7 +49,7 @@ def team_alloc(members: list, alloc_size: int) -> list:
     return result
 
 
-def team_to_string(teams) -> str:
+def team_to_string(teams: list[list[discord.Member]]) -> str:
     """チームのリストを表す2次元リストの文字列表現を取得する
 
     Args:
@@ -73,70 +58,94 @@ def team_to_string(teams) -> str:
     Returns:
         文字列表現
     """
-    result = ""
-    for i, t in enumerate(teams):
-        members = ""
-        for m in t:
-            if members:
-                members += ", "
-            members += m.nick or m.name
-        result += f"[Team {i + 1}] {members}\n"
-    return result
+    return "".join(
+        f"[Team {i + 1}] {', '.join(m.display_name for m in t)}\n"
+        for i, t in enumerate(teams)
+    )
 
 
-async def proc_alloc_command(ctx: commands.Context, alloc_size: int):
-    """チーム割り振りコマンドを処理し、返答する。
+async def reply_teams(interaction: discord.Interaction, alloc_size: int) -> None:
+    """実行した人の VC にいるメンバーをチーム分けし、返答する
 
     Args:
-        ctx: commands.Context オブジェクト
+        interaction: スラッシュコマンドの interaction
         alloc_size: 1チームあたりの人数
     """
-    # 発言者のVCにいるメンバーリスト
-    members = ctx.author.voice.channel.members
+    user = interaction.user
+    voice = user.voice if isinstance(user, discord.Member) else None
+    if voice is None or voice.channel is None:
+        await interaction.response.send_message(
+            "ボイスチャンネルに入ってから実行してください", ephemeral=True
+        )
+        return
 
-    # 簡易テスト用
-    # members = list(m for m in ctx.message.guild.members if m != bot.user)
-
-    # チーム分け
-    result = team_alloc(members, alloc_size)
-
-    # 返答
-    reply = team_to_string(result)
-    await ctx.channel.send(reply)
+    teams = team_alloc(voice.channel.members, alloc_size)
+    await interaction.response.send_message(team_to_string(teams))
 
 
-@bot.event
-async def on_ready():
-    LOGGER.info(f"Logged in as {bot.user.name}#{bot.user.id}")
-
-
-@bot.command(pass_context=True)
-async def duo(ctx: commands.Context):
+@app_commands.command()
+@app_commands.guild_only()
+async def duo(interaction: discord.Interaction) -> None:
     """1チームあたり2人に近くなるよう均等にチーム分けする"""
-    await proc_alloc_command(ctx, 2)
+    await reply_teams(interaction, 2)
 
 
-@bot.command(pass_context=True, aliases=["sq"])
-async def squad(ctx: commands.Context):
+@app_commands.command()
+@app_commands.guild_only()
+async def squad(interaction: discord.Interaction) -> None:
     """1チームあたり4人に近くなるよう均等にチーム分けする"""
-    await proc_alloc_command(ctx, 4)
+    await reply_teams(interaction, 4)
 
 
-@bot.command(pass_context=True)
-async def team(ctx: commands.Context, alloc_size: int):
+@app_commands.command()
+@app_commands.guild_only()
+@app_commands.describe(size="1チームあたりの人数")
+async def team(
+    interaction: discord.Interaction, size: app_commands.Range[int, 1]
+) -> None:
     """指定人数に近くなるよう均等にチーム分けする"""
-    await proc_alloc_command(ctx, alloc_size)
+    await reply_teams(interaction, size)
 
 
-@bot.command(pass_context=True)
-async def dice(ctx: commands.Context, dimen: int = 6):
+@app_commands.command()
+@app_commands.describe(sides="ダイスの面の数 (省略すると 6)")
+async def dice(
+    interaction: discord.Interaction, sides: app_commands.Range[int, 1] = 6
+) -> None:
     """1から指定数値までのダイスを振る"""
-    num = random.randint(1, dimen)
-    await ctx.channel.send(f"{ctx.message.author.mention} {num}")
+    await interaction.response.send_message(str(random.randint(1, sides)))
 
 
-def main():
-    bot.run(os.environ.get("BOT_TOKEN"))
+class TeamBot(discord.Client):
+    def __init__(self, dev_guild_id: int | None) -> None:
+        super().__init__(intents=discord.Intents.default())
+        self.dev_guild_id = dev_guild_id
+        self.tree = app_commands.CommandTree(self)
+        for command in (duo, squad, team, dice):
+            self.tree.add_command(command)
+
+    async def setup_hook(self) -> None:
+        if self.dev_guild_id is None:
+            await self.tree.sync()
+            return
+
+        # サーバー単位の登録は即時に反映されるので、開発中は指定のサーバーだけに登録して変更をすぐ試せるようにする
+        guild = discord.Object(id=self.dev_guild_id)
+        self.tree.copy_global_to(guild=guild)
+        await self.tree.sync(guild=guild)
+
+    async def on_ready(self) -> None:
+        LOGGER.info("Logged in as %s (ID: %s)", self.user, self.user.id)
+
+
+def main() -> None:
+    token = os.environ.get("BOT_TOKEN")
+    if not token:
+        sys.exit("BOT_TOKEN is not set")
+
+    dev_guild_id = os.environ.get("DEV_GUILD_ID")
+    client = TeamBot(int(dev_guild_id) if dev_guild_id else None)
+    client.run(token, root_logger=True)
 
 
 if __name__ == "__main__":
