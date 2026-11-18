@@ -1,7 +1,10 @@
+import itertools
 import logging
+import math
 import os
 import random
 import sys
+from collections.abc import Sequence
 
 import discord
 from discord import app_commands
@@ -9,59 +12,43 @@ from discord import app_commands
 LOGGER = logging.getLogger(__name__)
 
 
-def team_alloc(members: list, alloc_size: int) -> list:
-    """指定の割り当てサイズに近い人数で均等にチーム分配する
+def team_alloc[T](members: Sequence[T], alloc_size: int) -> list[list[T]]:
+    """指定の人数に近くなるよう均等にチーム分けする
 
     Args:
-        members: 参加者リスト
-        alloc_size: 1チーム当たりの人数
+        members: 参加者
+        alloc_size: 1 チームあたりの人数の上限
 
     Returns:
-        均等に分配されたチームのリスト
+        チームごとの参加者のリスト
     """
     total = len(members)
+    team_count = math.ceil(total / alloc_size)
+    sizes = [(total + i) // team_count for i in range(team_count)]
 
-    if total % alloc_size == 0:
-        # 割り切れる場合
-        # チーム数＝人数 / 割り当てサイズ
-        teams = total // alloc_size
-    else:
-        # 余る場合
-        # チーム数＝人数 / 割り当てサイズ + 1
-        teams = total // alloc_size + 1
-
-    # 各チームの人数リスト
-    sizes = [(total + i) // teams for i in range(teams)]
-
-    # シャッフル
-    random.shuffle(members)
-    members_iter = iter(members)
-
-    # 割り振り
-    result = []
-    for s in sizes:
-        team = []
-        for _ in range(s):
-            m = next(members_iter)
-            team.append(m)
-        result.append(team)
-
-    return result
+    shuffled = list(members)
+    random.shuffle(shuffled)
+    unassigned = iter(shuffled)
+    return [list(itertools.islice(unassigned, size)) for size in sizes]
 
 
-def team_to_string(teams: list[list[discord.Member]]) -> str:
-    """チームのリストを表す2次元リストの文字列表現を取得する
+def team_to_string(teams: Sequence[Sequence[discord.Member]]) -> str:
+    """チーム分けの結果を返答用の文字列にする
 
     Args:
-        teams: チームのリストを表す2次元リスト
+        teams: チームごとの参加者
 
     Returns:
-        文字列表現
+        `[Team 1] a, b` の形の行をチームごとに並べた文字列
     """
-    return "".join(
-        f"[Team {i + 1}] {', '.join(m.display_name for m in t)}\n"
-        for i, t in enumerate(teams)
-    )
+    lines = []
+    for i, team in enumerate(teams, start=1):
+        names = ", ".join(
+            discord.utils.escape_mentions(discord.utils.escape_markdown(m.display_name))
+            for m in team
+        )
+        lines.append(f"[Team {i}] {names}")
+    return "\n".join(lines)
 
 
 async def reply_teams(interaction: discord.Interaction, alloc_size: int) -> None:
@@ -69,7 +56,7 @@ async def reply_teams(interaction: discord.Interaction, alloc_size: int) -> None
 
     Args:
         interaction: スラッシュコマンドの interaction
-        alloc_size: 1チームあたりの人数
+        alloc_size: 1 チームあたりの人数の上限
     """
     user = interaction.user
     voice = user.voice if isinstance(user, discord.Member) else None
@@ -86,20 +73,20 @@ async def reply_teams(interaction: discord.Interaction, alloc_size: int) -> None
 @app_commands.command()
 @app_commands.guild_only()
 async def duo(interaction: discord.Interaction) -> None:
-    """1チームあたり2人に近くなるよう均等にチーム分けする"""
+    """1 チームあたり 2 人に近くなるよう均等にチーム分けする"""
     await reply_teams(interaction, 2)
 
 
 @app_commands.command()
 @app_commands.guild_only()
 async def squad(interaction: discord.Interaction) -> None:
-    """1チームあたり4人に近くなるよう均等にチーム分けする"""
+    """1 チームあたり 4 人に近くなるよう均等にチーム分けする"""
     await reply_teams(interaction, 4)
 
 
 @app_commands.command()
 @app_commands.guild_only()
-@app_commands.describe(size="1チームあたりの人数")
+@app_commands.describe(size="1 チームあたりの人数")
 async def team(
     interaction: discord.Interaction, size: app_commands.Range[int, 1]
 ) -> None:
@@ -112,13 +99,19 @@ async def team(
 async def dice(
     interaction: discord.Interaction, sides: app_commands.Range[int, 1] = 6
 ) -> None:
-    """1から指定数値までのダイスを振る"""
+    """1 から指定の数までのダイスを振る"""
     await interaction.response.send_message(str(random.randint(1, sides)))
 
 
 class TeamBot(discord.Client):
     def __init__(self, dev_guild_id: int | None) -> None:
-        super().__init__(intents=discord.Intents.default())
+        # VC の参加者の取得にはサーバーと VC の参加状況のキャッシュがあれば足りるので、使わないイベントを受け取らないよう、その 2 つに対応する intents だけを有効にする
+        intents = discord.Intents.none()
+        intents.guilds = True
+        intents.voice_states = True
+        super().__init__(
+            intents=intents, allowed_mentions=discord.AllowedMentions.none()
+        )
         self.dev_guild_id = dev_guild_id
         self.tree = app_commands.CommandTree(self)
         for command in (duo, squad, team, dice):
