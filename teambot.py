@@ -5,6 +5,7 @@ import os
 import random
 import sys
 from collections.abc import Sequence
+from typing import Protocol
 
 import discord
 from discord import app_commands
@@ -32,7 +33,12 @@ def team_alloc[T](members: Sequence[T], alloc_size: int) -> list[list[T]]:
     return [list(itertools.islice(unassigned, size)) for size in sizes]
 
 
-def team_to_string(teams: Sequence[Sequence[discord.Member]]) -> str:
+class HasDisplayName(Protocol):
+    @property
+    def display_name(self) -> str: ...
+
+
+def team_to_string(teams: Sequence[Sequence[HasDisplayName]]) -> str:
     """チーム分けの結果を返答用の文字列にする
 
     Args:
@@ -128,7 +134,7 @@ class TeamBot(discord.Client):
         await self.tree.sync(guild=guild)
 
     async def on_ready(self) -> None:
-        LOGGER.info("Logged in as %s (ID: %s)", self.user, self.user.id)
+        LOGGER.info("Logged in as %r", self.user)
 
 
 def main() -> None:

@@ -1,6 +1,11 @@
-from types import SimpleNamespace
+from dataclasses import dataclass
 
 from teambot import team_alloc, team_to_string
+
+
+@dataclass
+class FakeMember:
+    display_name: str
 
 
 def test_team_sizes_differ_by_at_most_one():
@@ -27,17 +32,17 @@ def test_all_teams_are_full_when_divisible():
 
 def test_team_to_string_lists_members_per_team():
     teams = [
-        [SimpleNamespace(display_name="a"), SimpleNamespace(display_name="b")],
-        [SimpleNamespace(display_name="c")],
+        [FakeMember("a"), FakeMember("b")],
+        [FakeMember("c")],
     ]
     assert team_to_string(teams) == "[Team 1] a, b\n[Team 2] c"
 
 
 def test_team_to_string_escapes_markdown_in_names():
-    teams = [[SimpleNamespace(display_name="a_b*c")]]
+    teams = [[FakeMember("a_b*c")]]
     assert team_to_string(teams) == r"[Team 1] a\_b\*c"
 
 
 def test_team_to_string_escapes_mentions_in_names():
-    teams = [[SimpleNamespace(display_name="@everyone")]]
+    teams = [[FakeMember("@everyone")]]
     assert team_to_string(teams) == "[Team 1] @\u200beveryone"

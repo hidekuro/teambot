@@ -73,6 +73,12 @@ uv run ruff check
 uv run ruff format
 ```
 
+Type check with [Pyright](https://microsoft.github.io/pyright/).
+
+```bash
+uv run pyright
+```
+
 Run tests with [pytest](https://docs.pytest.org/).
 
 ```bash
