@@ -26,15 +26,8 @@ You will get result: 3, 4, 4, and 4 peoples teams.
 
 ## System Requirements
 
-- Python 3+
-- pipenv (pipx recommended)
-
-```bash
-python3 -m pip install -U pip
-python3 -m pip install --user pipx
-python3 -m pipx ensurepath
-pipx install pipenv
-```
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+  - uv installs the required Python version (see `.python-version`) automatically.
 
 ## Roles Requirements
 
@@ -48,20 +41,17 @@ pipx install pipenv
 git clone https://github.com/hidekuro/teambot
 cd teambot
 
-# recommended venv
-python3 -m venv .venv
-source .venv/bin/activate
+# install dependencies into .venv
+uv sync
 
-# install pip modules
-pipenv install
-# or...
-# pip install -r requirements.txt
-
-# put your APP BOT USER's Token into .env file
-# https://discordapp.com/developers/applications/me
+# put your bot's token into .env file
+# https://discord.com/developers/applications
 echo BOT_TOKEN=abcde12345yourtoken > .env
 
-# start bot in background
+# start bot in foreground
+uv run --env-file .env teambot.py
+
+# or start bot in background
 # this script creates teambot.pid on current directory.
 bash ./start.sh
 ```
@@ -70,6 +60,15 @@ To exit, do the following.
 
 ```bash
 kill -TERM $(cat teambot.pid)
+```
+
+## Development
+
+Lint and format with [Ruff](https://docs.astral.sh/ruff/).
+
+```bash
+uv run ruff check
+uv run ruff format
 ```
 
 ## LICENSE

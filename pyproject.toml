@@ -1,0 +1,28 @@
+[project]
+name = "teambot"
+version = "0.1.0"
+description = "A Discord bot for party players."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.15"
+dependencies = [
+    "discord-py>=2.7.1",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.5",
+]
+
+[tool.uv]
+required-version = ">=0.13"
+# 公開直後に乗っ取られたパッケージを取り込まないよう、公開から 3 日経ったものだけを使う
+exclude-newer = "3 days"
+package = false
+
+[tool.ruff.lint]
+extend-select = [
+    "I",  # isort
+    "UP", # pyupgrade
+    "B",  # flake8-bugbear
+]
