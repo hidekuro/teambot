@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     # 常駐させるとログが際限なく溜まるので、ファイルの大きさと数に上限を設ける
     logging:
+      driver: json-file
       options:
         max-size: 10m
         max-file: "3"
