@@ -11,6 +11,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pytest>=9.2.0",
     "ruff>=0.17.5",
 ]
 
@@ -19,6 +20,9 @@ required-version = ">=0.13"
 # 公開直後に乗っ取られたパッケージを取り込まないよう、公開から 3 日経ったものだけを使う
 exclude-newer = "3 days"
 package = false
+
+[tool.pytest]
+pythonpath = ["."]
 
 [tool.ruff.lint]
 extend-select = [

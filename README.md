@@ -73,6 +73,12 @@ uv run ruff check
 uv run ruff format
 ```
 
+Run tests with [pytest](https://docs.pytest.org/).
+
+```bash
+uv run pytest
+```
+
 ## LICENSE
 
 The MIT License.
