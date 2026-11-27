@@ -1,5 +1,5 @@
 # Dependabot が uv のイメージも更新できるよう、COPY --from に直接書かずにステージとして読み込む
-FROM ghcr.io/astral-sh/uv:0.13.9 AS uv
+FROM ghcr.io/astral-sh/uv:0.13.10 AS uv
 
 FROM python:3.15-slim-trixie AS builder
 COPY --from=uv /uv /bin/
