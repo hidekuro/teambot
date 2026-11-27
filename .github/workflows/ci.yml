@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # setup-uv は v10 のようなメジャーバージョンのタグを公開していないので、リリースのバージョンまで固定して Dependabot に更新させる
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@v10.4.0
       - run: uv sync --locked
       - run: uv run ruff check
       - run: uv run ruff format --check
